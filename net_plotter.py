@@ -9,8 +9,9 @@ import h5py
 import os
 from os.path import exists, commonprefix
 
-from .h5_util import write_list, read_list
-from .model_loader import load
+from h5_util import write_list, read_list
+from model_loader import load
+
 ################################################################################
 #                 Supporting functions for weights manipulation
 ################################################################################

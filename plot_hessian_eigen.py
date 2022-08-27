@@ -11,17 +11,17 @@ import socket
 import torch.nn as nn
 import pytorch_lightning as pl
 
-from .plot_surface import name_surface_file, setup_surface_file
-from .hess_vec_prod import min_max_hessian_eigs
-from .model_loader import load
-from .net_plotter import name_direction_file, setup_direction, load_directions, get_weights, set_weights, set_states
-from .net_plotter import get_weights, set_weights, set_states
-from .projection import cal_angle, nplist_to_tensor
-from .scheduler import get_job_indices
-from .plot_2D import plot_2d_eig_ratio
-from .plot_1D import plot_1d_eig_ratio
-from .mpi4pytorch import setup_MPI, barrier, reduce_min, reduce_max
-from .evaluation import Evaluator
+from plot_surface import name_surface_file, setup_surface_file
+from hess_vec_prod import min_max_hessian_eigs
+from model_loader import load
+from net_plotter import name_direction_file, setup_direction, load_directions, get_weights, set_weights, set_states
+from net_plotter import get_weights, set_weights, set_states
+from projection import cal_angle, nplist_to_tensor
+from scheduler import get_job_indices
+from plot_2D import plot_2d_eig_ratio
+from plot_1D import plot_1d_eig_ratio
+from mpi4pytorch import setup_MPI, barrier, reduce_min, reduce_max
+from evaluation import Evaluator
 
 def crunch_hessian_eigs(surf_file, net, w, s, d, dataloader, comm, rank, args, evaluator):
     """

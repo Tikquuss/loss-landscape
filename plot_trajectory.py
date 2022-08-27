@@ -2,22 +2,12 @@
     Plot the optimization path in the space spanned by principle directions.
 """
 
-import numpy as np
-import torch
-import copy
-import math
-import h5py
-import os
-import argparse
-import model_loader
-import net_plotter
+from plot_2D import plot_trajectory as plot_traj
+from projection import setup_PCA_directions, project_trajectory
+from model_loader import load
+from net_plotter import get_weights
 
-from .plot_2D import plot_trajectory
-from .projection import setup_PCA_directions, project_trajectory
-from .model_loader import load
-from .net_plotter import get_weights
-
-def plot_trajecto(args, model_files, lightning_module_class) :
+def plot_trajectory(args, model_files, lightning_module_class) :
     last_model_file = model_files[-1] 
     net = load(lightning_module_class, model_file = last_model_file)
     w = get_weights(net) # initial parameters
@@ -36,4 +26,4 @@ def plot_trajecto(args, model_files, lightning_module_class) :
     #--------------------------------------------------------------------------
     proj_file = project_trajectory(dir_file, w, s, model_files, args.dir_type, 'cos', lightning_module_class)
 
-    plot_trajectory(proj_file, dir_file)
+    plot_traj(proj_file, dir_file)

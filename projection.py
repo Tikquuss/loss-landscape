@@ -9,9 +9,9 @@ import copy
 import h5py
 from sklearn.decomposition import PCA
 
-from .net_plotter import get_weights, load_directions, get_diff_weights, get_diff_states, ignore_biasbn
-from .h5_util import write_list
-from .model_loader import load
+from net_plotter import get_weights, load_directions, get_diff_weights, get_diff_states, ignore_biasbn
+from h5_util import write_list
+from model_loader import load
 
 
 def tensorlist_to_tensor(weights):

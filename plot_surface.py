@@ -18,15 +18,15 @@ import os
 import numpy as np
 import torch.nn as nn
 
-from .model_loader import load
-from .net_plotter import name_direction_file, setup_direction, load_directions
-from .net_plotter import get_weights, set_weights, set_states
-from .projection import cal_angle, nplist_to_tensor
-from .scheduler import get_job_indices
-from .plot_2D import plot_contour_trajectory, plot_2d_contour
-from .plot_1D import plot_1d_loss_err
-from .mpi4pytorch import setup_MPI, barrier, reduce_max
-from .evaluation import Evaluator
+from model_loader import load
+from net_plotter import name_direction_file, setup_direction, load_directions
+from net_plotter import get_weights, set_weights, set_states
+from projection import cal_angle, nplist_to_tensor
+from scheduler import get_job_indices
+from plot_2D import plot_contour_trajectory, plot_2d_contour
+from plot_1D import plot_1d_loss_err
+from mpi4pytorch import setup_MPI, barrier, reduce_max
+from evaluation import Evaluator
 
 def name_surface_file(args, dir_file):
     # skip if surf_file is specified in args

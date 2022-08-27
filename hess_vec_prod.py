@@ -1,7 +1,6 @@
 import torch
 import time
 import numpy as np
-from torch import nn
 from torch.autograd import Variable
 from scipy.sparse.linalg import LinearOperator, eigsh
 
