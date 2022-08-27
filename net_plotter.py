@@ -6,13 +6,15 @@ import torch
 import copy
 from os.path import exists, commonprefix
 import h5py
-import h5_util
-import model_loader
 import os
+from os.path import exists, commonprefix
 
+from .h5_util import write_list, read_list
+from .model_loader import load
 ################################################################################
 #                 Supporting functions for weights manipulation
 ################################################################################
+
 def get_weights(net):
     """ Extract parameters from net, and return a list of tensors"""
     return [p.data for p in net.parameters()]
@@ -38,9 +40,8 @@ def set_weights(net, weights, directions=None, step=None):
             changes = [d*step for d in directions[0]]
 
         for (p, w, d) in zip(net.parameters(), weights, changes):
-            p.data = w + torch.Tensor(d).type(type(w))
-
-
+            p.data = w + torch.Tensor(d).type(type(w))  
+            
 def set_states(net, states, directions=None, step=None):
     """
         Overwrite the network's state_dict or change it along directions with a step size.
@@ -162,6 +163,7 @@ def ignore_biasbn(directions):
         if d.dim() <= 1:
             d.fill_(0)
 
+
 ################################################################################
 #                       Create directions
 ################################################################################
@@ -221,11 +223,10 @@ def create_random_direction(net, dir_type='weights', ignore='biasbn', norm='filt
 
     return direction
 
-
 def setup_direction(args, dir_file, net):
     """
         Setup the h5 file to store the directions.
-        - xdirection, ydirection: The pertubation direction added to the mdoel.
+        - xdirection, ydirection: The pertubation direction added to the model.
           The direction is a list of tensors.
     """
     print('-------------------------------------------------------------------')
@@ -245,25 +246,25 @@ def setup_direction(args, dir_file, net):
         f.close()
 
     # Create the plotting directions
-    f = h5py.File(dir_file,'w') # create file, fail if exists
+    f = h5py.File(dir_file, 'w') # create file, fail if exists
     if not args.dir_file:
         print("Setting up the plotting directions...")
         if args.model_file2:
-            net2 = model_loader.load(args.dataset, args.model, args.model_file2)
+            net2 = load(lightning_module_class = type(net), model_file = args.model_file2)
             xdirection = create_target_direction(net, net2, args.dir_type)
         else:
             xdirection = create_random_direction(net, args.dir_type, args.xignore, args.xnorm)
-        h5_util.write_list(f, 'xdirection', xdirection)
+        write_list(f, 'xdirection', xdirection)
 
         if args.y:
             if args.same_dir:
                 ydirection = xdirection
             elif args.model_file3:
-                net3 = model_loader.load(args.dataset, args.model, args.model_file3)
+                net3 = load(lightning_module_class = type(net), model_file = args.model_file3)
                 ydirection = create_target_direction(net, net3, args.dir_type)
             else:
                 ydirection = create_random_direction(net, args.dir_type, args.yignore, args.ynorm)
-            h5_util.write_list(f, 'ydirection', ydirection)
+            write_list(f, 'ydirection', ydirection)
 
     f.close()
     print ("direction file created: %s" % dir_file)
@@ -326,16 +327,15 @@ def name_direction_file(args):
 
     return dir_file
 
-
 def load_directions(dir_file):
     """ Load direction(s) from the direction file."""
 
     f = h5py.File(dir_file, 'r')
     if 'ydirection' in f.keys():  # If this is a 2D plot
-        xdirection = h5_util.read_list(f, 'xdirection')
-        ydirection = h5_util.read_list(f, 'ydirection')
+        xdirection = read_list(f, 'xdirection')
+        ydirection = read_list(f, 'ydirection')
         directions = [xdirection, ydirection]
     else:
-        directions = [h5_util.read_list(f, 'xdirection')]
+        directions = [read_list(f, 'xdirection')]
 
     return directions

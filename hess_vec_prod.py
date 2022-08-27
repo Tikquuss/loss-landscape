@@ -46,7 +46,7 @@ def gradtensor_to_npvec(net, include_bn=False):
 ################################################################################
 #                  For computing Hessian-vector products
 ################################################################################
-def eval_hess_vec_prod(vec, params, net, criterion, dataloader, use_cuda=False):
+def eval_hess_vec_prod(vec, params, net, dataloader, evaluator, use_cuda=False):
     """
     Evaluate product of the Hessian of the loss function with a direction vector "vec".
     The product result is saved in the grad of net.
@@ -72,8 +72,7 @@ def eval_hess_vec_prod(vec, params, net, criterion, dataloader, use_cuda=False):
         if use_cuda:
             inputs, targets = inputs.cuda(), targets.cuda()
 
-        outputs = net(inputs)
-        loss = criterion(outputs, targets)
+        loss = evaluator._get_loss(net, batch = (inputs, targets))
         grad_f = torch.autograd.grad(loss, inputs=params, create_graph=True)
 
         # Compute inner product of gradient with the direction vector
@@ -90,7 +89,7 @@ def eval_hess_vec_prod(vec, params, net, criterion, dataloader, use_cuda=False):
 ################################################################################
 #                  For computing Eigenvalues of Hessian
 ################################################################################
-def min_max_hessian_eigs(net, dataloader, criterion, rank=0, use_cuda=False, verbose=False):
+def min_max_hessian_eigs(net, dataloader, evaluator, rank=0, use_cuda=False, verbose=False):
     """
         Compute the largest and the smallest eigenvalues of the Hessian marix.
 
@@ -115,7 +114,7 @@ def min_max_hessian_eigs(net, dataloader, criterion, rank=0, use_cuda=False, ver
         hess_vec_prod.count += 1  # simulates a static variable
         vec = npvec_to_tensorlist(vec, params)
         start_time = time.time()
-        eval_hess_vec_prod(vec, params, net, criterion, dataloader, use_cuda)
+        eval_hess_vec_prod(vec, params, net, dataloader, evaluator, use_cuda)
         prod_time = time.time() - start_time
         if verbose and rank == 0: print("   Iter: %d  time: %f" % (hess_vec_prod.count, prod_time))
         return gradtensor_to_npvec(net)

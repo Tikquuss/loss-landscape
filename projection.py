@@ -7,10 +7,12 @@ import torch
 import os
 import copy
 import h5py
-import net_plotter
-import model_loader
-import h5_util
 from sklearn.decomposition import PCA
+
+from .net_plotter import get_weights, load_directions, get_diff_weights, get_diff_states, ignore_biasbn
+from .h5_util import write_list
+from .model_loader import load
+
 
 def tensorlist_to_tensor(weights):
     """ Concatnate a list of tensors into one tensor.
@@ -71,8 +73,6 @@ def npvec_to_tensorlist(direction, params):
         assert(idx == len(direction))
         return s2
 
-
-
 def cal_angle(vec1, vec2):
     """ Calculate cosine similarities between two torch tensors or two ndarraies
         Args:
@@ -82,7 +82,6 @@ def cal_angle(vec1, vec2):
         return torch.dot(vec1, vec2)/(vec1.norm()*vec2.norm()).item()
     elif isinstance(vec1, np.ndarray) and isinstance(vec2, np.ndarray):
         return np.ndarray.dot(vec1, vec2)/(np.linalg.norm(vec1)*np.linalg.norm(vec2))
-
 
 def project_1D(w, d):
     """ Project vector w to vector d and get the length of the projection.
@@ -123,8 +122,8 @@ def project_2D(d, dx, dy, proj_method):
     return x, y
 
 
-def project_trajectory(dir_file, w, s, dataset, model_name, model_files,
-               dir_type='weights', proj_method='cos'):
+def project_trajectory(dir_file, w, s, model_files,
+               dir_type='weights', proj_method='cos', lightning_module_class = None):
     """
         Project the optimization trajectory onto the given two directions.
 
@@ -147,19 +146,19 @@ def project_trajectory(dir_file, w, s, dataset, model_name, model_files,
         return proj_file
 
     # read directions and convert them to vectors
-    directions = net_plotter.load_directions(dir_file)
+    directions = load_directions(dir_file)
     dx = nplist_to_tensor(directions[0])
     dy = nplist_to_tensor(directions[1])
 
     xcoord, ycoord = [], []
     for model_file in model_files:
-        net2 = model_loader.load(dataset, model_name, model_file)
+        net2 = load(lightning_module_class, model_file = model_file)
         if dir_type == 'weights':
-            w2 = net_plotter.get_weights(net2)
-            d = net_plotter.get_diff_weights(w, w2)
+            w2 = get_weights(net2)
+            d = get_diff_weights(w, w2) 
         elif dir_type == 'states':
             s2 = net2.state_dict()
-            d = net_plotter.get_diff_states(s, s2)
+            d = get_diff_states(s, s2)
         d = tensorlist_to_tensor(d)
 
         x, y = project_2D(d, dx, dy, proj_method)
@@ -176,7 +175,7 @@ def project_trajectory(dir_file, w, s, dataset, model_name, model_files,
     return proj_file
 
 
-def setup_PCA_directions(args, model_files, w, s):
+def setup_PCA_directions(args, model_files, w, s, lightning_module_class = None):
     """
         Find PCA directions for the optimization path from the initial model
         to the final trained model.
@@ -204,15 +203,16 @@ def setup_PCA_directions(args, model_files, w, s):
     matrix = []
     for model_file in model_files:
         print (model_file)
-        net2 = model_loader.load(args.dataset, args.model, model_file)
+        net2 = load(lightning_module_class, model_file = model_file)
+        d = None
         if args.dir_type == 'weights':
-            w2 = net_plotter.get_weights(net2)
-            d = net_plotter.get_diff_weights(w, w2)
+            w2 = get_weights(net2)
+            d = get_diff_weights(w, w2)
         elif args.dir_type == 'states':
             s2 = net2.state_dict()
-            d = net_plotter.get_diff_states(s, s2)
+            d = get_diff_states(s, s2)
         if args.ignore == 'biasbn':
-        	net_plotter.ignore_biasbn(d)
+            ignore_biasbn(d)
         d = tensorlist_to_tensor(d)
         matrix.append(d.numpy())
 
@@ -235,12 +235,12 @@ def setup_PCA_directions(args, model_files, w, s):
         ydirection = npvec_to_tensorlist(pc2, s)
 
     if args.ignore == 'biasbn':
-        net_plotter.ignore_biasbn(xdirection)
-        net_plotter.ignore_biasbn(ydirection)
+        ignore_biasbn(xdirection)
+        ignore_biasbn(ydirection)
 
     f = h5py.File(dir_name, 'w')
-    h5_util.write_list(f, 'xdirection', xdirection)
-    h5_util.write_list(f, 'ydirection', ydirection)
+    write_list(f, 'xdirection', xdirection)
+    write_list(f, 'ydirection', ydirection)
 
     f['explained_variance_ratio_'] = pca.explained_variance_ratio_
     f['singular_values_'] = pca.singular_values_
@@ -250,4 +250,3 @@ def setup_PCA_directions(args, model_files, w, s):
     print ('PCA directions saved in: %s' % dir_name)
 
     return dir_name
-
