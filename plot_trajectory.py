@@ -27,3 +27,30 @@ def plot_trajectory(args, model_files, lightning_module_class) :
     proj_file = project_trajectory(dir_file, w, s, model_files, args.dir_type, 'cos', lightning_module_class)
 
     plot_traj(proj_file, dir_file)
+
+if __name__ == '__main__':
+
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Plot optimization trajectory')
+    parser.add_argument('--dataset', default='cifar10', help='dataset')
+    parser.add_argument('--model', default='resnet56', help='trained models')
+    parser.add_argument('--model_folder', default='', help='folders for models to be projected')
+    parser.add_argument('--dir_type', default='weights',
+        help="""direction type: weights (all weights except bias and BN paras) |
+                                states (include BN.running_mean/var)""")
+    parser.add_argument('--ignore', default='', help='ignore bias and BN paras: biasbn (no bias or bn)')
+    parser.add_argument('--prefix', default='model_', help='prefix for the checkpint model')
+    parser.add_argument('--suffix', default='.t7', help='prefix for the checkpint model')
+    parser.add_argument('--start_epoch', default=0, type=int, help='min index of epochs')
+    parser.add_argument('--max_epoch', default=300, type=int, help='max number of epochs')
+    parser.add_argument('--save_epoch', default=1, type=int, help='save models every few epochs')
+    parser.add_argument('--dir_file', default='', help='load the direction file for projection')
+
+    args = parser.parse_args()
+
+    # TODO
+    model_files = []
+    lightning_module_class = None
+    
+    plot_trajectory(args, model_files, lightning_module_class)
