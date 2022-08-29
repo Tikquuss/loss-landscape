@@ -33,12 +33,12 @@ def set_weights(net, weights, directions=None, step=None):
     else:
         assert step is not None, 'If a direction is specified then step must be specified as well'
 
+        dx = directions[0]
         if len(directions) == 2:
-            dx = directions[0]
             dy = directions[1]
             changes = [d0*step[0] + d1*step[1] for (d0, d1) in zip(dx, dy)]
         else:
-            changes = [d*step for d in directions[0]]
+            changes = [d*step for d in dx]
 
         for (p, w, d) in zip(net.parameters(), weights, changes):
             p.data = w + torch.Tensor(d).type(type(w))  
@@ -51,12 +51,12 @@ def set_states(net, states, directions=None, step=None):
         net.load_state_dict(states)
     else:
         assert step is not None, 'If direction is provided then the step must be specified as well'
+        dx = directions[0]
         if len(directions) == 2:
-            dx = directions[0]
             dy = directions[1]
             changes = [d0*step[0] + d1*step[1] for (d0, d1) in zip(dx, dy)]
         else:
-            changes = [d*step for d in directions[0]]
+            changes = [d*step for d in dx]
 
         new_states = copy.deepcopy(states)
         assert (len(new_states) == len(changes))
@@ -332,11 +332,11 @@ def load_directions(dir_file):
     """ Load direction(s) from the direction file."""
 
     f = h5py.File(dir_file, 'r')
+    xdirection = read_list(f, 'xdirection')
     if 'ydirection' in f.keys():  # If this is a 2D plot
-        xdirection = read_list(f, 'xdirection')
         ydirection = read_list(f, 'ydirection')
         directions = [xdirection, ydirection]
     else:
-        directions = [read_list(f, 'xdirection')]
+        directions = [xdirection]
 
     return directions

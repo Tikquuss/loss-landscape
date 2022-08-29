@@ -193,6 +193,8 @@ def plot_hessian_eigen(args, lightning_module_class, dataloader, get_loss) :
         else:
             plot_1d_eig_ratio(surf_file, args.xmin, args.xmax, 'min_eig', 'max_eig')
 
+    return dir_file, surf_file
+
 
 if __name__ == '__main__':
 
@@ -249,4 +251,4 @@ if __name__ == '__main__':
         loss = pl_module.criterion(input = tensor, target=y)
         return loss
 
-    plot_hessian_eigen(args, lightning_module_class, dataloader, get_loss)
+    dir_file, surf_file = plot_hessian_eigen(args, lightning_module_class, dataloader, get_loss)

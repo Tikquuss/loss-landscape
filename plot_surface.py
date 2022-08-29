@@ -242,6 +242,9 @@ def plot_surface(args, lightning_module_class, dataloader, metrics) :
         else:
             plot_1d_loss_err(surf_file, args.xmin, args.xmax, args.loss_max, args.log, args.show)
 
+    
+    return dir_file, surf_file
+
 
 if __name__ == '__main__':
 
@@ -295,4 +298,4 @@ if __name__ == '__main__':
     dataloader = None
     lightning_module_class = None
 
-    plot_surface(args, lightning_module_class, dataloader, metrics = ['test_loss', 'test_acc'])
+    dir_file, surf_file = plot_surface(args, lightning_module_class, dataloader, metrics = ['test_loss', 'test_acc'])
